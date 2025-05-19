@@ -11,7 +11,7 @@ import (
 )
 
 func GetAppointments() ([]models.Appointment, error) {
-	collection := config.DB.Database("petshop").Collection("appointmnets")
+	collection := config.DB.Database("petshop").Collection("appointments")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -29,7 +29,7 @@ func GetAppointments() ([]models.Appointment, error) {
 }
 
 func GetAppointmentByID(id primitive.ObjectID) (models.Appointment, error) {
-	collection := config.DB.Database("petshop").Collection("appointmnets")
+	collection := config.DB.Database("petshop").Collection("appointments")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -39,7 +39,7 @@ func GetAppointmentByID(id primitive.ObjectID) (models.Appointment, error) {
 }
 
 func CreateAppointment(appointment models.Appointment) error {
-	collection := config.DB.Database("petshop").Collection("appointmnets")
+	collection := config.DB.Database("petshop").Collection("appointments")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -48,7 +48,7 @@ func CreateAppointment(appointment models.Appointment) error {
 }
 
 func UpdateAppointment(id primitive.ObjectID, update bson.M) error {
-	collection := config.DB.Database("petshop").Collection("appointmnets")
+	collection := config.DB.Database("petshop").Collection("appointments")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -57,7 +57,7 @@ func UpdateAppointment(id primitive.ObjectID, update bson.M) error {
 }
 
 func DeleteAppointment(id primitive.ObjectID) error {
-	collection := config.DB.Database("petshop").Collection("appointmnets")
+	collection := config.DB.Database("petshop").Collection("appointments")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
