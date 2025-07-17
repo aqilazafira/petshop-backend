@@ -1,26 +1,27 @@
-package handler
+package controllers
 
 import (
-	"context"
-
-	"petshop-backend/config"
 	"petshop-backend/models"
+	"petshop-backend/repository"
 	"petshop-backend/utils"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var validate = validator.New()
-var userColl = config.DB.Database("petshop").Collection("users")
 
 type RegisterInput struct {
 	Name     string `json:"name"     validate:"required,min=3"`
 	Email    string `json:"email"    validate:"required,email"`
 	Password string `json:"password" validate:"required,min=6"`
+}
+
+type LoginInput struct {
+	Email    string `json:"email"    validate:"required,email"`
+	Password string `json:"password" validate:"required"`
 }
 
 func Register(c *fiber.Ctx) error {
@@ -32,32 +33,33 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	// Cek email sudah ada
-	count, _ := userColl.CountDocuments(context.TODO(), bson.M{"email": input.Email})
-	if count > 0 {
+	// Check if email already exists
+	exists, err := repository.CheckEmailExists(input.Email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	if exists {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Email already registered"})
 	}
 
-	hash, _ := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
 	user := models.User{
 		ID:       primitive.NewObjectID(),
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: string(hash),
-		Role:     "admin", // atau "user", sesuaikan kebutuhan
+		Role:     "user", // Default role for new registrations
 	}
 
-	_, err := userColl.InsertOne(context.TODO(), user)
-	if err != nil {
+	if err := repository.CreateUser(user); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"message": "Register success"})
-}
-
-type LoginInput struct {
-	Email    string `json:"email"    validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Register success"})
 }
 
 func Login(c *fiber.Ctx) error {
@@ -69,8 +71,7 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	var user models.User
-	err := userColl.FindOne(context.TODO(), bson.M{"email": input.Email}).Decode(&user)
+	user, err := repository.GetUserByEmail(input.Email)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
 	}
@@ -79,7 +80,11 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
 	}
 
-	token, _ := utils.GenerateToken(user.ID.Hex(), user.Role)
+	token, err := utils.GenerateToken(user.ID.Hex(), user.Role)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error generating token"})
+	}
+
 	return c.JSON(fiber.Map{
 		"message": "Login success",
 		"token":   token,

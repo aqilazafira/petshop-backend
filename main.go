@@ -10,7 +10,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	swagger "github.com/swaggo/fiber-swagger"
+	"github.com/gofiber/swagger"
+)
 
 // @title Petshop API
 // @version 1.0
@@ -20,7 +21,7 @@ import (
 
 func main() {
 	if os.Getenv("JWT_SECRET") == "" {
-		log.Fatal("JWT_SECRET environment variable not set")
+		os.Setenv("JWT_SECRET", "supersecret")
 	}
 	app := fiber.New()
 
@@ -28,7 +29,7 @@ func main() {
 	app.Use(logger.New())
 
 	config.ConnectDB()
-	routes.Setup(app)
+	routes.SetupRoutes(app)
 
 	app.Get("/swagger/*", swagger.HandlerDefault) // dok API
 
