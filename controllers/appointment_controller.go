@@ -9,6 +9,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// GetAppointments godoc
+// @Summary Get all appointments
+// @Description Get all appointments
+// @Tags appointments
+// @Produce  json
+// @Success 200 {array} models.Appointment
+// @Router /appointments [get]
 func GetAppointments(c *fiber.Ctx) error {
 	appointments, err := repository.GetAppointments()
 	if err != nil {
@@ -17,6 +24,14 @@ func GetAppointments(c *fiber.Ctx) error {
 	return c.JSON(appointments)
 }
 
+// GetAppointmentWithDetails godoc
+// @Summary Get an appointment by ID with details
+// @Description Get an appointment by ID with details
+// @Tags appointments
+// @Produce  json
+// @Param id path string true "Appointment ID"
+// @Success 200 {object} object
+// @Router /appointments/{id} [get]
 func GetAppointmentWithDetails(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -33,10 +48,10 @@ func GetAppointmentWithDetails(c *fiber.Ctx) error {
 	service, _ := repository.GetServiceByID(appointment.ServiceID)
 
 	type AppointmentDetail struct {
-	Appointment models.Appointment `json:"appointment"`
-	Pet         models.Pet         `json:"pet"`
-	Service     models.Service     `json:"service"`
-}
+		Appointment models.Appointment `json:"appointment"`
+		Pet         models.Pet         `json:"pet"`
+		Service     models.Service     `json:"service"`
+	}
 
 	detail := AppointmentDetail{
 		Appointment: appointment,
@@ -47,6 +62,15 @@ func GetAppointmentWithDetails(c *fiber.Ctx) error {
 	return c.JSON(detail)
 }
 
+// CreateAppointment godoc
+// @Summary Create a new appointment
+// @Description Create a new appointment
+// @Tags appointments
+// @Accept  json
+// @Produce  json
+// @Param appointment body models.Appointment true "Appointment"
+// @Success 201 {object} models.Appointment
+// @Router /appointments [post]
 func CreateAppointment(c *fiber.Ctx) error {
 	var appointment models.Appointment
 	if err := c.BodyParser(&appointment); err != nil {
@@ -66,6 +90,16 @@ func CreateAppointment(c *fiber.Ctx) error {
 	return c.Status(201).JSON(appointment)
 }
 
+// UpdateAppointment godoc
+// @Summary Update an appointment
+// @Description Update an appointment
+// @Tags appointments
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Appointment ID"
+// @Param appointment body models.Appointment true "Appointment"
+// @Success 200 {object} map[string]interface{}
+// @Router /appointments/{id} [put]
 func UpdateAppointment(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -93,6 +127,14 @@ func UpdateAppointment(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "Data berhasil diperbarui"})
 }
 
+// DeleteAppointment godoc
+// @Summary Delete an appointment
+// @Description Delete an appointment
+// @Tags appointments
+// @Produce  json
+// @Param id path string true "Appointment ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /appointments/{id} [delete]
 func DeleteAppointment(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)

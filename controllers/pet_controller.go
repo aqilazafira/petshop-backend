@@ -10,6 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// GetPets godoc
+// @Summary Get all pets
+// @Description Get all pets
+// @Tags pets
+// @Produce  json
+// @Success 200 {array} models.Pet
+// @Router /pets [get]
 func GetPets(c *fiber.Ctx) error {
 	pets, err := repository.GetPets()
 	if err != nil {
@@ -18,6 +25,14 @@ func GetPets(c *fiber.Ctx) error {
 	return c.JSON(pets)
 }
 
+// GetPet godoc
+// @Summary Get a pet by ID
+// @Description Get a pet by ID
+// @Tags pets
+// @Produce  json
+// @Param id path string true "Pet ID"
+// @Success 200 {object} models.Pet
+// @Router /pets/{id} [get]
 func GetPet(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -31,6 +46,20 @@ func GetPet(c *fiber.Ctx) error {
 	return c.JSON(pet)
 }
 
+// CreatePet godoc
+// @Summary Create a new pet
+// @Description Create a new pet
+// @Tags pets
+// @Accept  multipart/form-data
+// @Produce  json
+// @Param name formData string true "Pet Name"
+// @Param species formData string true "Pet Species"
+// @Param age formData integer true "Pet Age"
+// @Param gender formData string true "Pet Gender"
+// @Param owner_id formData string true "Owner ID"
+// @Param image formData file false "Pet Image"
+// @Success 201 {object} models.Pet
+// @Router /pets [post]
 func CreatePet(c *fiber.Ctx) error {
 	age, err := strconv.Atoi(c.FormValue("age"))
 	if err != nil {
@@ -67,6 +96,21 @@ func CreatePet(c *fiber.Ctx) error {
 	return c.Status(201).JSON(pet)
 }
 
+// UpdatePet godoc
+// @Summary Update a pet
+// @Description Update a pet
+// @Tags pets
+// @Accept  multipart/form-data
+// @Produce  json
+// @Param id path string true "Pet ID"
+// @Param name formData string true "Pet Name"
+// @Param species formData string true "Pet Species"
+// @Param age formData integer true "Pet Age"
+// @Param gender formData string true "Pet Gender"
+// @Param owner_id formData string true "Owner ID"
+// @Param image formData file false "Pet Image"
+// @Success 200 {object} map[string]interface{}
+// @Router /pets/{id} [put]
 func UpdatePet(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -108,6 +152,14 @@ func UpdatePet(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "Data berhasil diperbarui"})
 }
 
+// DeletePet godoc
+// @Summary Delete a pet
+// @Description Delete a pet
+// @Tags pets
+// @Produce  json
+// @Param id path string true "Pet ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /pets/{id} [delete]
 func DeletePet(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)

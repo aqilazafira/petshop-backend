@@ -1,0 +1,594 @@
+basePath: /api
+definitions:
+  controllers.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  controllers.RegisterInput:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 3
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  models.Appointment:
+    properties:
+      date:
+        type: string
+      id:
+        type: string
+      note:
+        type: string
+      pet_id:
+        type: string
+      service_id:
+        type: string
+    type: object
+  models.Owner:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  models.Pet:
+    properties:
+      age:
+        type: integer
+      gender:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      species:
+        type: string
+    type: object
+  models.Service:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: integer
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server Petshop server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Petshop API
+  version: "1.0"
+paths:
+  /appointments:
+    get:
+      description: Get all appointments
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Appointment'
+            type: array
+      summary: Get all appointments
+      tags:
+      - appointments
+    post:
+      consumes:
+      - application/json
+      description: Create a new appointment
+      parameters:
+      - description: Appointment
+        in: body
+        name: appointment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Appointment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Appointment'
+      summary: Create a new appointment
+      tags:
+      - appointments
+  /appointments/{id}:
+    delete:
+      description: Delete an appointment
+      parameters:
+      - description: Appointment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete an appointment
+      tags:
+      - appointments
+    get:
+      description: Get an appointment by ID with details
+      parameters:
+      - description: Appointment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: Get an appointment by ID with details
+      tags:
+      - appointments
+    put:
+      consumes:
+      - application/json
+      description: Update an appointment
+      parameters:
+      - description: Appointment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Appointment
+        in: body
+        name: appointment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Appointment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update an appointment
+      tags:
+      - appointments
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login a user
+      parameters:
+      - description: Login Input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login a user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: Register Input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register a new user
+      tags:
+      - auth
+  /owners:
+    get:
+      description: Get all owners
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Owner'
+            type: array
+      summary: Get all owners
+      tags:
+      - owners
+    post:
+      consumes:
+      - application/json
+      description: Create a new owner
+      parameters:
+      - description: Owner
+        in: body
+        name: owner
+        required: true
+        schema:
+          $ref: '#/definitions/models.Owner'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Owner'
+      summary: Create a new owner
+      tags:
+      - owners
+  /owners/{id}:
+    delete:
+      description: Delete an owner
+      parameters:
+      - description: Owner ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete an owner
+      tags:
+      - owners
+    get:
+      description: Get an owner by ID
+      parameters:
+      - description: Owner ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Owner'
+      summary: Get an owner by ID
+      tags:
+      - owners
+    put:
+      consumes:
+      - application/json
+      description: Update an owner
+      parameters:
+      - description: Owner ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Owner
+        in: body
+        name: owner
+        required: true
+        schema:
+          $ref: '#/definitions/models.Owner'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update an owner
+      tags:
+      - owners
+  /pets:
+    get:
+      description: Get all pets
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Pet'
+            type: array
+      summary: Get all pets
+      tags:
+      - pets
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new pet
+      parameters:
+      - description: Pet Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Pet Species
+        in: formData
+        name: species
+        required: true
+        type: string
+      - description: Pet Age
+        in: formData
+        name: age
+        required: true
+        type: integer
+      - description: Pet Gender
+        in: formData
+        name: gender
+        required: true
+        type: string
+      - description: Owner ID
+        in: formData
+        name: owner_id
+        required: true
+        type: string
+      - description: Pet Image
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Pet'
+      summary: Create a new pet
+      tags:
+      - pets
+  /pets/{id}:
+    delete:
+      description: Delete a pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a pet
+      tags:
+      - pets
+    get:
+      description: Get a pet by ID
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Pet'
+      summary: Get a pet by ID
+      tags:
+      - pets
+    put:
+      consumes:
+      - multipart/form-data
+      description: Update a pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Pet Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Pet Species
+        in: formData
+        name: species
+        required: true
+        type: string
+      - description: Pet Age
+        in: formData
+        name: age
+        required: true
+        type: integer
+      - description: Pet Gender
+        in: formData
+        name: gender
+        required: true
+        type: string
+      - description: Owner ID
+        in: formData
+        name: owner_id
+        required: true
+        type: string
+      - description: Pet Image
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a pet
+      tags:
+      - pets
+  /services:
+    get:
+      description: Get all services
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Service'
+            type: array
+      summary: Get all services
+      tags:
+      - services
+    post:
+      consumes:
+      - application/json
+      description: Create a new service
+      parameters:
+      - description: Service
+        in: body
+        name: service
+        required: true
+        schema:
+          $ref: '#/definitions/models.Service'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Service'
+      summary: Create a new service
+      tags:
+      - services
+  /services/{id}:
+    delete:
+      description: Delete a service
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a service
+      tags:
+      - services
+    get:
+      description: Get a service by ID
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Service'
+      summary: Get a service by ID
+      tags:
+      - services
+    put:
+      consumes:
+      - application/json
+      description: Update a service
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Service
+        in: body
+        name: service
+        required: true
+        schema:
+          $ref: '#/definitions/models.Service'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a service
+      tags:
+      - services
+schemes:
+- http
+swagger: "2.0"

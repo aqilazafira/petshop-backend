@@ -9,6 +9,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// GetOwners godoc
+// @Summary Get all owners
+// @Description Get all owners
+// @Tags owners
+// @Produce  json
+// @Success 200 {array} models.Owner
+// @Router /owners [get]
 func GetOwners(c *fiber.Ctx) error {
 	owners, err := repository.GetOwners()
 	if err != nil {
@@ -17,6 +24,14 @@ func GetOwners(c *fiber.Ctx) error {
 	return c.JSON(owners)
 }
 
+// GetOwner godoc
+// @Summary Get an owner by ID
+// @Description Get an owner by ID
+// @Tags owners
+// @Produce  json
+// @Param id path string true "Owner ID"
+// @Success 200 {object} models.Owner
+// @Router /owners/{id} [get]
 func GetOwner(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -30,6 +45,15 @@ func GetOwner(c *fiber.Ctx) error {
 	return c.JSON(owner)
 }
 
+// CreateOwner godoc
+// @Summary Create a new owner
+// @Description Create a new owner
+// @Tags owners
+// @Accept  json
+// @Produce  json
+// @Param owner body models.Owner true "Owner"
+// @Success 201 {object} models.Owner
+// @Router /owners [post]
 func CreateOwner(c *fiber.Ctx) error {
 	var owner models.Owner
 	if err := c.BodyParser(&owner); err != nil {
@@ -43,6 +67,16 @@ func CreateOwner(c *fiber.Ctx) error {
 	return c.Status(201).JSON(owner)
 }
 
+// UpdateOwner godoc
+// @Summary Update an owner
+// @Description Update an owner
+// @Tags owners
+// @Accept  json
+// @Produce  json
+// @Param id path string true "Owner ID"
+// @Param owner body models.Owner true "Owner"
+// @Success 200 {object} map[string]interface{}
+// @Router /owners/{id} [put]
 func UpdateOwner(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
@@ -69,6 +103,14 @@ func UpdateOwner(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "Data berhasil diperbarui"})
 }
 
+// DeleteOwner godoc
+// @Summary Delete an owner
+// @Description Delete an owner
+// @Tags owners
+// @Produce  json
+// @Param id path string true "Owner ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /owners/{id} [delete]
 func DeleteOwner(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
