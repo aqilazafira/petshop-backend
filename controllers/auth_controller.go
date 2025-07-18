@@ -32,7 +32,7 @@ type LoginInput struct {
 // @Produce  json
 // @Param input body RegisterInput true "Register Input"
 // @Success 201 {object} map[string]interface{}
-// @Router /auth/register [post]
+// @Router /register [post]
 func Register(c *fiber.Ctx) error {
 	var input RegisterInput
 	if err := c.BodyParser(&input); err != nil {
@@ -79,7 +79,7 @@ func Register(c *fiber.Ctx) error {
 // @Produce  json
 // @Param input body LoginInput true "Login Input"
 // @Success 200 {object} map[string]interface{}
-// @Router /auth/login [post]
+// @Router /login [post]
 func Login(c *fiber.Ctx) error {
 	var input LoginInput
 	if err := c.BodyParser(&input); err != nil {
