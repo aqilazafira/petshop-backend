@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -14,11 +13,6 @@ import (
 var DB *mongo.Client
 
 func ConnectDB() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file")
-	}
-
 	mongoString := os.Getenv("MONGOSTRING")
 	if mongoString == "" {
 		log.Fatal("MONGOSTRING environment variable is not set")

@@ -1,8 +1,9 @@
 package routes
 
 import (
+	"petshop-backend/config/middleware"
 	"petshop-backend/controllers"
-	"petshop-backend/middleware"
+	"petshop-backend/handler"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,16 +12,16 @@ func SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 
 	// Auth
-	api.Post("/register", controllers.Register)
-	api.Post("/login", controllers.Login)
+	app.Post("/register", handler.Register)
+	app.Post("/login", handler.Login)
 
 	// Protected routes untuk Pets
-	pets := api.Group("/pets", middleware.Protected())
+	pets := api.Group("/pets")
 	pets.Get("/", controllers.GetPets)
 	pets.Get(":/id", controllers.GetPet)
 	pets.Post("/", controllers.CreatePet)
 	pets.Put(":/id", controllers.UpdatePet)
-	pets.Delete(":/id", controllers.DeletePet)
+	pets.Delete(":/id", middleware.Middlewares("admin"), controllers.DeletePet)
 
 	// Routes untuk Owners
 	owners := api.Group("/owners")

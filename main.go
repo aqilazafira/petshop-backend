@@ -1,50 +1,81 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"petshop-backend/config"
 	"petshop-backend/routes"
 
+	_ "petshop-backend/docs"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/swagger"
-	_ "petshop-backend/docs" 
+	"github.com/joho/godotenv"
 )
 
-// @title Petshop API
+func init() {
+	if _, err := os.Stat(".env"); err == nil {
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println("Gagal memuat file .env")
+		} else {
+			fmt.Println("File .env dimuat (local)")
+		}
+	}
+}
+
+// @title TES SWAGGER PEMROGRAMAN III
 // @version 1.0
-// @description This is a sample server Petshop server.
-// @termsOfService http://swagger.io/terms/
+// @description This is a sample swagger for Fiber
 
 // @contact.name API Support
-// @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
+// @contact.url https://github.com/Fadhail
+// @contact.email 71423044@std.ulbi.ac.id
 
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @BasePath /
+// @schemes http https
 
-// @host localhost:3000
-// @BasePath /api
-// @schemes http
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
-	if os.Getenv("JWT_SECRET") == "" {
-		os.Setenv("JWT_SECRET", "supersecret")
-	}
+	// Connect to database
+	config.ConnectDB()
+
 	app := fiber.New()
 
-	app.Use(cors.New())
+	// Logging request
 	app.Use(logger.New())
 
-	config.ConnectDB()
+	// Basic CORS
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Join(config.GetAllowedOrigins(), ","),
+		AllowCredentials: true,
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+	}))
+
+	// Setup router
 	routes.SetupRoutes(app)
 
-	app.Get("/swagger/*", swagger.HandlerDefault) // serve API docs
+	// 404 handler
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": "Endpoint not found",
+		})
+	})
 
-	log.Println("Server is running on http://localhost:3000")
-	if err := app.Listen(":3000"); err != nil {
-		log.Fatalf("Failed to run server: %v", err)
+	// Baca PORT dari environment variable
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000" // default port kalau tidak ada
+	}
+
+	log.Printf("Server is running at http://localhost:%s", port)
+	if err := app.Listen(":" + port); err != nil {
+		log.Fatalf("Error starting server: %v", err)
 	}
 }

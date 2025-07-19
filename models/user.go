@@ -1,11 +1,13 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+type UserLogin struct {
+	Email    string `json:"email" bson:"email"`
+	Username string `json:"username" bson:"username"`
+	Password string `json:"password" bson:"password"`
+	Role     string `json:"role" bson:"role"`
+}
 
-type User struct {
-	ID       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Name     string             `json:"name"          bson:"name"  validate:"required,min=3"`
-	Email    string             `json:"email"         bson:"email" validate:"required,email"`
-	Password string             `json:"password,omitempty" bson:"password" validate:"required,min=6"`
-	Role     string             `json:"role"          bson:"role"` // e.g. "admin", "staff"
+type Payload struct {
+	User string `json:"user"`
+	Role string `json:"role"`
 }
