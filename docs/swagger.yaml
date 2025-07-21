@@ -1,30 +1,5 @@
-basePath: /api
+basePath: /
 definitions:
-  controllers.LoginInput:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  controllers.RegisterInput:
-    properties:
-      email:
-        type: string
-      name:
-        minLength: 3
-        type: string
-      password:
-        minLength: 6
-        type: string
-    required:
-    - email
-    - name
-    - password
-    type: object
   models.Appointment:
     properties:
       date:
@@ -79,18 +54,13 @@ definitions:
       price:
         type: integer
     type: object
-host: localhost:3000
 info:
   contact:
-    email: support@swagger.io
+    email: 71423044@std.ulbi.ac.id
     name: API Support
-    url: http://www.swagger.io/support
-  description: This is a sample server Petshop server.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: Petshop API
+    url: https://github.com/Fadhail
+  description: This is a sample swagger for Fiber
+  title: TES SWAGGER PEMROGRAMAN III
   version: "1.0"
 paths:
   /appointments:
@@ -194,52 +164,6 @@ paths:
       summary: Update an appointment
       tags:
       - appointments
-  /auth/login:
-    post:
-      consumes:
-      - application/json
-      description: Login a user
-      parameters:
-      - description: Login Input
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.LoginInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Login a user
-      tags:
-      - auth
-  /auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Register a new user
-      parameters:
-      - description: Register Input
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.RegisterInput'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Register a new user
-      tags:
-      - auth
   /owners:
     get:
       description: Get all owners
@@ -591,4 +515,10 @@ paths:
       - services
 schemes:
 - http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

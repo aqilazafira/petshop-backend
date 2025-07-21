@@ -46,4 +46,12 @@ func SetupRoutes(app *fiber.App) {
 	services.Post("/", controllers.CreateService)
 	services.Put(":/id", controllers.UpdateService)
 	services.Delete(":/id", controllers.DeleteService)
+
+	// Routes untuk Adoptions
+	adoptions := api.Group("/adoptions")
+	adoptions.Get("/", controllers.GetAdoptions)
+	adoptions.Get(":/id", controllers.GetAdoption)
+	adoptions.Post("/", controllers.CreateAdoption)
+	adoptions.Put(":/id", controllers.UpdateAdoption)
+	adoptions.Delete(":/id", controllers.DeleteAdoption)
 }
