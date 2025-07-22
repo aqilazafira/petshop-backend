@@ -64,3 +64,39 @@ func DeleteAdoption(id primitive.ObjectID) error {
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 	return err
 }
+
+func GetAdoptionsByStatus(status string) ([]models.Adoption, error) {
+	collection := config.DB.Database("petshop").Collection("adoptions")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := collection.Find(ctx, bson.M{"status": status})
+	if err != nil {
+		return nil, err
+	}
+
+	var adoptions []models.Adoption
+	if err = cursor.All(ctx, &adoptions); err != nil {
+		return nil, err
+	}
+
+	return adoptions, nil
+}
+
+func GetAdoptionsByPetID(petID primitive.ObjectID) ([]models.Adoption, error) {
+	collection := config.DB.Database("petshop").Collection("adoptions")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := collection.Find(ctx, bson.M{"pet_id": petID})
+	if err != nil {
+		return nil, err
+	}
+
+	var adoptions []models.Adoption
+	if err = cursor.All(ctx, &adoptions); err != nil {
+		return nil, err
+	}
+
+	return adoptions, nil
+}

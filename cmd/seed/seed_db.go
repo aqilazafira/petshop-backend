@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"petshop-backend/config"
 	"petshop-backend/models"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,12 +24,14 @@ func main() {
 	pets := db.Collection("pets")
 	services := db.Collection("services")
 	appointments := db.Collection("appointments")
+	adoptions := db.Collection("adoptions")
 
 	// Seed data
 	seedOwners(owners, 20)
 	seedPets(pets, 20)
 	seedServices(services)
 	seedAppointments(appointments, 20)
+	seedAdoptions(adoptions, pets, 15)
 
 	fmt.Println("Database seeding completed successfully!")
 }
@@ -229,4 +232,107 @@ func getServices(collection *mongo.Collection) ([]models.Service, error) {
 		return nil, err
 	}
 	return services, nil
+}
+
+func seedAdoptions(collection *mongo.Collection, petsCollection *mongo.Collection, count int) {
+	// Get some pets first
+	pets, err := getPets(petsCollection)
+	if err != nil {
+		log.Printf("Error getting pets for adoption seeding: %v", err)
+		return
+	}
+
+	if len(pets) == 0 {
+		log.Println("No pets found for adoption seeding")
+		return
+	}
+
+	names := []string{"Ahmad Fauzi", "Siti Nurhaliza", "Budi Santoso", "Rina Kartika", "Joko Widodo",
+		"Maya Sari", "Rizki Pratama", "Lina Marlina", "Andi Surya", "Dewi Sartika",
+		"Agus Setiawan", "Fitri Handayani", "Doni Pratama", "Sari Dewi", "Hendro Gunawan"}
+
+	livingSpaces := []string{"rumah-halaman", "rumah-tanpa-halaman", "apartemen", "kos"}
+	statuses := []string{"pending", "approved", "rejected"}
+	reasons := []string{
+		"Ingin memiliki teman di rumah",
+		"Anak-anak sangat menyukai hewan",
+		"Memiliki pengalaman merawat hewan",
+		"Rumah kosong dan butuh penjaga",
+		"Hobi memelihara hewan sejak kecil",
+		"Ingin mengajarkan tanggung jawab pada anak",
+		"Suka dengan hewan yang lucu",
+		"Ingin memberikan kasih sayang pada hewan terlantar",
+	}
+
+	adoptions := make([]models.Adoption, count)
+
+	for i := 0; i < count; i++ {
+		// Select random pet
+		pet := pets[rand.Intn(len(pets))]
+		name := names[rand.Intn(len(names))]
+
+		// Create adoption data
+		adoption := models.Adoption{
+			ID:               primitive.NewObjectID(),
+			PetID:            pet.ID,
+			PetName:          pet.Name,
+			Name:             name,
+			Email:            fmt.Sprintf("%s@email.com", generateUsername(name)),
+			Phone:            generatePhone(),
+			Address:          generateAddress(),
+			Experience:       generateExperience(),
+			Reason:           reasons[rand.Intn(len(reasons))],
+			LivingSpace:      livingSpaces[rand.Intn(len(livingSpaces))],
+			HasOtherPets:     rand.Intn(2) == 1,
+			OtherPetsDetails: generateOtherPetsDetails(),
+			Status:           statuses[rand.Intn(len(statuses))],
+			SubmissionDate:   time.Now().AddDate(0, 0, -rand.Intn(30)),
+			CreatedAt:        time.Now(),
+			UpdatedAt:        time.Now(),
+		}
+
+		// If approved, add adoption date
+		if adoption.Status == "approved" {
+			adoptionDate := time.Now().AddDate(0, 0, -rand.Intn(15))
+			adoption.AdoptionDate = &adoptionDate
+		}
+
+		adoptions[i] = adoption
+	}
+
+	_, err = collection.InsertMany(context.TODO(), toInterfaceSlice(adoptions))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Seeded %d adoptions\n", count)
+}
+
+func generateUsername(name string) string {
+	// Simple username generation from name
+	username := strings.ToLower(strings.ReplaceAll(name, " ", "."))
+	return username
+}
+
+func generateExperience() string {
+	experiences := []string{
+		"Pernah memelihara kucing selama 3 tahun",
+		"Memiliki pengalaman dengan anjing kecil",
+		"Belum pernah memelihara hewan sebelumnya",
+		"Sudah memelihara berbagai jenis hewan sejak kecil",
+		"Pernah merawat hewan yang sakit",
+		"",
+	}
+	return experiences[rand.Intn(len(experiences))]
+}
+
+func generateOtherPetsDetails() string {
+	details := []string{
+		"Memiliki 1 kucing persia berumur 2 tahun",
+		"Ada 2 ekor ikan mas di akuarium",
+		"Punya burung kenari di kandang",
+		"",
+		"",
+		"",
+	}
+	return details[rand.Intn(len(details))]
 }

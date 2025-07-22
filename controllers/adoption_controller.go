@@ -58,15 +58,40 @@ func GetAdoption(c *fiber.Ctx) error {
 func CreateAdoption(c *fiber.Ctx) error {
 	var adoption models.Adoption
 	if err := c.BodyParser(&adoption); err != nil {
-		return c.Status(400).SendString(err.Error())
+		return c.Status(400).JSON(fiber.Map{
+			"error":   "Invalid request body",
+			"details": err.Error(),
+		})
 	}
+
+	// Validation
+	if adoption.Name == "" || adoption.Email == "" || adoption.Phone == "" ||
+		adoption.Address == "" || adoption.Reason == "" || adoption.LivingSpace == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error":   "Missing required fields",
+			"message": "Name, email, phone, address, reason, and living space are required",
+		})
+	}
+
+	// Set default values
 	adoption.ID = primitive.NewObjectID()
-	adoption.AdoptionDate = primitive.NewDateTimeFromTime(time.Now())
+	adoption.Status = "pending"
+	adoption.SubmissionDate = time.Now()
+	adoption.CreatedAt = time.Now()
+	adoption.UpdatedAt = time.Now()
+
 	err := repository.CreateAdoption(adoption)
 	if err != nil {
-		return c.Status(500).SendString(err.Error())
+		return c.Status(500).JSON(fiber.Map{
+			"error":   "Failed to create adoption",
+			"details": err.Error(),
+		})
 	}
-	return c.Status(201).JSON(adoption)
+
+	return c.Status(201).JSON(fiber.Map{
+		"message": "Adoption request submitted successfully",
+		"data":    adoption,
+	})
 }
 
 // UpdateAdoption godoc
@@ -83,26 +108,39 @@ func UpdateAdoption(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return c.Status(400).SendString("ID tidak valid")
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid ID format",
+		})
 	}
 
 	var adoption models.Adoption
 	if err := c.BodyParser(&adoption); err != nil {
-		return c.Status(400).SendString(err.Error())
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
 	}
 
 	update := bson.M{"$set": bson.M{
-		"pet_id":   adoption.PetID,
-		"owner_id": adoption.OwnerID,
-		"status":   adoption.Status,
+		"status":     adoption.Status,
+		"updated_at": time.Now(),
 	}}
+
+	// If adoption is approved, set adoption date
+	if adoption.Status == "approved" {
+		now := time.Now()
+		update["$set"].(bson.M)["adoption_date"] = now
+	}
 
 	err = repository.UpdateAdoption(objID, update)
 	if err != nil {
-		return c.Status(500).SendString(err.Error())
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to update adoption",
+		})
 	}
 
-	return c.JSON(fiber.Map{"message": "Data berhasil diperbarui"})
+	return c.JSON(fiber.Map{
+		"message": "Adoption updated successfully",
+	})
 }
 
 // DeleteAdoption godoc
@@ -117,11 +155,76 @@ func DeleteAdoption(c *fiber.Ctx) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return c.Status(400).SendString("ID tidak valid")
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid ID format",
+		})
 	}
 	err = repository.DeleteAdoption(objID)
 	if err != nil {
-		return c.Status(500).SendString(err.Error())
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to delete adoption",
+		})
 	}
-	return c.JSON(fiber.Map{"message": "Data berhasil dihapus"})
+	return c.JSON(fiber.Map{
+		"message": "Adoption deleted successfully",
+	})
+}
+
+// GetAdoptionsByStatus godoc
+// @Summary Get adoptions by status
+// @Description Get all adoptions filtered by status
+// @Tags adoptions
+// @Produce  json
+// @Param status query string true "Status (pending, approved, rejected)"
+// @Success 200 {array} models.Adoption
+// @Router /adoptions/status [get]
+func GetAdoptionsByStatus(c *fiber.Ctx) error {
+	status := c.Query("status")
+	if status == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Status parameter is required",
+		})
+	}
+
+	adoptions, err := repository.GetAdoptionsByStatus(status)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to fetch adoptions",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"data":  adoptions,
+		"count": len(adoptions),
+	})
+}
+
+// GetAdoptionsByPetID godoc
+// @Summary Get adoptions by pet ID
+// @Description Get all adoptions for a specific pet
+// @Tags adoptions
+// @Produce  json
+// @Param pet_id path string true "Pet ID"
+// @Success 200 {array} models.Adoption
+// @Router /adoptions/pet/{pet_id} [get]
+func GetAdoptionsByPetID(c *fiber.Ctx) error {
+	petIDStr := c.Params("pet_id")
+	petID, err := primitive.ObjectIDFromHex(petIDStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid pet ID format",
+		})
+	}
+
+	adoptions, err := repository.GetAdoptionsByPetID(petID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to fetch adoptions",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"data":  adoptions,
+		"count": len(adoptions),
+	})
 }

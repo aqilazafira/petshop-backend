@@ -50,8 +50,10 @@ func SetupRoutes(app *fiber.App) {
 	// Routes untuk Adoptions
 	adoptions := api.Group("/adoptions")
 	adoptions.Get("/", controllers.GetAdoptions)
-	adoptions.Get(":/id", controllers.GetAdoption)
+	adoptions.Get("/status", controllers.GetAdoptionsByStatus)
+	adoptions.Get("/pet/:pet_id", controllers.GetAdoptionsByPetID)
+	adoptions.Get("/:id", controllers.GetAdoption)
 	adoptions.Post("/", controllers.CreateAdoption)
-	adoptions.Put(":/id", controllers.UpdateAdoption)
-	adoptions.Delete(":/id", controllers.DeleteAdoption)
+	adoptions.Put("/:id", controllers.UpdateAdoption)
+	adoptions.Delete("/:id", controllers.DeleteAdoption)
 }
