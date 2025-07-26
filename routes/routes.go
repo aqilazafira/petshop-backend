@@ -51,6 +51,7 @@ func SetupRoutes(app *fiber.App, supabaseClient *storage.Client) {
 	// Routes untuk Adoptions
 	adoptions := api.Group("/adoptions")
 	adoptions.Get("/", controllers.GetAdoptions)
+	adoptions.Get("/my", controllers.GetMyAdoptions) // New endpoint for user's own adoptions
 	adoptions.Get("/status", controllers.GetAdoptionsByStatus)
 	adoptions.Get("/pet/:pet_id", controllers.GetAdoptionsByPetID)
 	adoptions.Get("/:id", controllers.GetAdoption)

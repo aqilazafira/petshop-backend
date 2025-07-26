@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"petshop-backend/config/middleware"
 	"petshop-backend/models"
 	pwd "petshop-backend/pkg/password"
@@ -30,7 +29,6 @@ func Login(c *fiber.Ctx) error {
 	// Generate token PASETO
 	token, err := middleware.EncodeWithRoleHours(user.Role, user.Username, 2)
 	if err != nil {
-		fmt.Println("Token generation error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
 	}
 
@@ -48,12 +46,7 @@ func Login(c *fiber.Ctx) error {
 func Register(c *fiber.Ctx) error {
 	var req models.UserLogin
 
-	// Debug: Print headers and body
-	fmt.Printf("Content-Type: %s\n", c.Get("Content-Type"))
-	fmt.Printf("Raw body: %s\n", string(c.Body()))
-
 	if err := c.BodyParser(&req); err != nil {
-		fmt.Printf("Body parsing error: %v\n", err)
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
 			"error":   "Invalid JSON format",
 			"details": err.Error(),

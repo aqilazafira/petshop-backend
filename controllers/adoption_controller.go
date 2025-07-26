@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"petshop-backend/config/middleware"
 	"petshop-backend/models"
 	"petshop-backend/repository"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -64,6 +66,18 @@ func CreateAdoption(c *fiber.Ctx) error {
 		})
 	}
 
+	// Get user email from token
+	authToken := c.Get("Authorization")
+	if authToken != "" {
+		if strings.HasPrefix(authToken, "Bearer ") {
+			authToken = strings.TrimPrefix(authToken, "Bearer ")
+		}
+		dataDecode, err := middleware.Decoder(authToken)
+		if err == nil {
+			adoption.UserEmail = dataDecode.Email // Email field contains email in token
+		}
+	}
+
 	// Validation
 	if adoption.Name == "" || adoption.Email == "" || adoption.Phone == "" ||
 		adoption.Address == "" || adoption.Reason == "" || adoption.LivingSpace == "" {
@@ -120,15 +134,32 @@ func UpdateAdoption(c *fiber.Ctx) error {
 		})
 	}
 
+	// Get current adoption to check pet_id
+	currentAdoption, err := repository.GetAdoptionByID(objID)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "Adoption not found",
+		})
+	}
+
 	update := bson.M{"$set": bson.M{
 		"status":     adoption.Status,
 		"updated_at": time.Now(),
 	}}
 
-	// If adoption is approved, set adoption date
+	// If adoption is approved, set adoption date and update pet status
 	if adoption.Status == "approved" {
 		now := time.Now()
 		update["$set"].(bson.M)["adoption_date"] = now
+
+		// Update pet status to "adopted"
+		petUpdate := bson.M{"$set": bson.M{
+			"status": "adopted",
+		}}
+		err = repository.UpdatePet(currentAdoption.PetID, petUpdate)
+		if err != nil {
+			// Continue with adoption update even if pet update fails
+		}
 	}
 
 	err = repository.UpdateAdoption(objID, update)
@@ -217,6 +248,49 @@ func GetAdoptionsByPetID(c *fiber.Ctx) error {
 	}
 
 	adoptions, err := repository.GetAdoptionsByPetID(petID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to fetch adoptions",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"data":  adoptions,
+		"count": len(adoptions),
+	})
+}
+
+// GetMyAdoptions godoc
+// @Summary Get adoptions for current user
+// @Description Get all adoptions for the currently logged-in user
+// @Tags adoptions
+// @Produce  json
+// @Success 200 {array} models.Adoption
+// @Router /adoptions/my [get]
+func GetMyAdoptions(c *fiber.Ctx) error {
+	// Get user email from token
+	authToken := c.Get("Authorization")
+
+	if authToken == "" {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Missing Authorization Header",
+		})
+	}
+
+	if strings.HasPrefix(authToken, "Bearer ") {
+		authToken = strings.TrimPrefix(authToken, "Bearer ")
+	}
+
+	dataDecode, err := middleware.Decoder(authToken)
+	if err != nil {
+		return c.Status(401).JSON(fiber.Map{
+			"error": "Invalid or expired token",
+		})
+	}
+
+	userEmail := dataDecode.Email // Email field contains email in token
+
+	adoptions, err := repository.GetAdoptionsByUserEmail(userEmail)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": "Failed to fetch adoptions",

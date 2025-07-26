@@ -10,6 +10,7 @@ type Adoption struct {
 	ID               primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	PetID            primitive.ObjectID `json:"pet_id" bson:"pet_id"`
 	PetName          string             `json:"pet_name" bson:"pet_name"`
+	UserEmail        string             `json:"user_email" bson:"user_email"` // Email user yang mengajukan adopsi
 	Name             string             `json:"name" bson:"name"`
 	Email            string             `json:"email" bson:"email"`
 	Phone            string             `json:"phone" bson:"phone"`

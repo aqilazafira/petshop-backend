@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"petshop-backend/models"
 	"strings"
@@ -34,16 +33,16 @@ func Decoder(tokenstr string) (payload models.Payload, err error) {
 
 	pubKey, err := paseto.NewV4AsymmetricPublicKeyFromHex(publickey)
 	if err != nil {
-		fmt.Println("Decode NewV4AsymmetricPublicKeyFromHex : ", err)
+		return payload, err
 	}
 
 	parser := paseto.NewParser()
 	token, err := parser.ParseV4Public(pubKey, tokenstr, nil)
 	if err != nil {
-		fmt.Println("Decode ParseV4Public : ", err)
-	} else {
-		json.Unmarshal(token.ClaimsJSON(), &payload)
+		return payload, err
 	}
+
+	json.Unmarshal(token.ClaimsJSON(), &payload)
 
 	return payload, err
 }

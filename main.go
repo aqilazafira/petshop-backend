@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -21,9 +20,7 @@ func init() {
 	if _, err := os.Stat(".env"); err == nil {
 		err := godotenv.Load()
 		if err != nil {
-			fmt.Println("Gagal memuat file .env")
-		} else {
-			fmt.Println("File .env dimuat (local)")
+			// Error loading .env file
 		}
 	}
 }
@@ -56,8 +53,8 @@ func main() {
 
 	// Basic CORS
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     strings.Join(config.GetAllowedOrigins(), ","),		AllowCredentials: true,
-		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		AllowOrigins: strings.Join(config.GetAllowedOrigins(), ","), AllowCredentials: true,
+		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
 	}))
 
 	// Setup router

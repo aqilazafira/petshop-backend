@@ -154,6 +154,7 @@ func CreatePet(c *fiber.Ctx, supabaseClient *storage.Client) error {
 		Age:     age,
 		Gender:  c.FormValue("gender"),
 		OwnerID: ownerID,
+		Status:  "available", // Set default status as available
 	}
 
 	file, err := c.FormFile("image")

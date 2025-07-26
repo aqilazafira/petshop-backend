@@ -10,4 +10,5 @@ type Pet struct {
 	Age      int                `json:"age" bson:"age"`
 	Gender   string             `json:"gender" bson:"gender"`
 	ImageURL string             `json:"image_url" bson:"image_url"`
+	Status   string             `json:"status" bson:"status"` // available, pending, adopted
 }

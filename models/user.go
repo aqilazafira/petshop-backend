@@ -8,6 +8,6 @@ type UserLogin struct {
 }
 
 type Payload struct {
-	User string `json:"user"`
-	Role string `json:"role"`
+	Email string `json:"email"` // Changed from "user" to "email"
+	Role  string `json:"role"`
 }
