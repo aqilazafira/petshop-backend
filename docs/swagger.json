@@ -1,8 +1,4 @@
 {
-    "schemes": [
-        "http",
-        "https"
-    ],
     "swagger": "2.0",
     "info": {
         "description": "This is a sample swagger for Fiber",
@@ -14,8 +10,247 @@
         },
         "version": "1.0"
     },
-    "basePath": "/",
+    "basePath": "/api",
     "paths": {
+        "/adoptions": {
+            "get": {
+                "description": "Get all adoptions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "adoptions"
+                ],
+                "summary": "Get all adoptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Adoption"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new adoption",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "adoptions"
+                ],
+                "summary": "Create a new adoption",
+                "parameters": [
+                    {
+                        "description": "Adoption",
+                        "name": "adoption",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Adoption"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Adoption"
+                        }
+                    }
+                }
+            }
+        },
+        "/adoptions/my": {
+            "get": {
+                "description": "Get all adoptions for the currently logged-in user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "adoptions"
+                ],
+                "summary": "Get adoptions for current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Adoption"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/adoptions/pet/{pet_id}": {
+            "get": {
+                "description": "Get all adoptions for a specific pet",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "adoptions"
+                ],
+                "summary": "Get adoptions by pet ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pet ID",
+                        "name": "pet_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Adoption"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/adoptions/status": {
+            "get": {
+                "description": "Get all adoptions filtered by status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "adoptions"
+                ],
+                "summary": "Get adoptions by status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Status (pending, approved, rejected)",
+                        "name": "status",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Adoption"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/adoptions/{id}": {
+            "get": {
+                "description": "Get an adoption by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "adoptions"
+                ],
+                "summary": "Get an adoption by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Adoption ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Adoption"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an adoption",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "adoptions"
+                ],
+                "summary": "Update an adoption",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Adoption ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Adoption",
+                        "name": "adoption",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Adoption"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an adoption",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "adoptions"
+                ],
+                "summary": "Delete an adoption",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Adoption ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/appointments": {
             "get": {
                 "description": "Get all appointments",
@@ -160,6 +395,62 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "User login with email and password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Login details",
+                        "name": "login",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserLogin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -536,6 +827,69 @@
                 }
             }
         },
+        "/register": {
+            "post": {
+                "description": "User registration with email, username, password, and role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User registration",
+                "parameters": [
+                    {
+                        "description": "User registration details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserLogin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/services": {
             "get": {
                 "description": "Get all services",
@@ -690,6 +1044,67 @@
         }
     },
     "definitions": {
+        "models.Adoption": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "adoption_date": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "experience": {
+                    "type": "string"
+                },
+                "has_other_pets": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "living_space": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "other_pets_details": {
+                    "type": "string"
+                },
+                "pet_id": {
+                    "type": "string"
+                },
+                "pet_name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "pending, approved, rejected",
+                    "type": "string"
+                },
+                "submission_date": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_email": {
+                    "description": "Email user yang mengajukan adopsi",
+                    "type": "string"
+                }
+            }
+        },
         "models.Appointment": {
             "type": "object",
             "properties": {
@@ -753,6 +1168,10 @@
                 },
                 "species": {
                     "type": "string"
+                },
+                "status": {
+                    "description": "available, pending, adopted",
+                    "type": "string"
                 }
             }
         },
@@ -770,6 +1189,23 @@
                 },
                 "price": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.UserLogin": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         }

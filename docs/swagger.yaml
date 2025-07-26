@@ -1,5 +1,46 @@
-basePath: /
+basePath: /api
 definitions:
+  models.Adoption:
+    properties:
+      address:
+        type: string
+      adoption_date:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      experience:
+        type: string
+      has_other_pets:
+        type: boolean
+      id:
+        type: string
+      living_space:
+        type: string
+      name:
+        type: string
+      other_pets_details:
+        type: string
+      pet_id:
+        type: string
+      pet_name:
+        type: string
+      phone:
+        type: string
+      reason:
+        type: string
+      status:
+        description: pending, approved, rejected
+        type: string
+      submission_date:
+        type: string
+      updated_at:
+        type: string
+      user_email:
+        description: Email user yang mengajukan adopsi
+        type: string
+    type: object
   models.Appointment:
     properties:
       date:
@@ -42,6 +83,9 @@ definitions:
         type: string
       species:
         type: string
+      status:
+        description: available, pending, adopted
+        type: string
     type: object
   models.Service:
     properties:
@@ -54,6 +98,17 @@ definitions:
       price:
         type: integer
     type: object
+  models.UserLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact:
     email: 71423044@std.ulbi.ac.id
@@ -63,6 +118,164 @@ info:
   title: TES SWAGGER PEMROGRAMAN III
   version: "1.0"
 paths:
+  /adoptions:
+    get:
+      description: Get all adoptions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Adoption'
+            type: array
+      summary: Get all adoptions
+      tags:
+      - adoptions
+    post:
+      consumes:
+      - application/json
+      description: Create a new adoption
+      parameters:
+      - description: Adoption
+        in: body
+        name: adoption
+        required: true
+        schema:
+          $ref: '#/definitions/models.Adoption'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Adoption'
+      summary: Create a new adoption
+      tags:
+      - adoptions
+  /adoptions/{id}:
+    delete:
+      description: Delete an adoption
+      parameters:
+      - description: Adoption ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete an adoption
+      tags:
+      - adoptions
+    get:
+      description: Get an adoption by ID
+      parameters:
+      - description: Adoption ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Adoption'
+      summary: Get an adoption by ID
+      tags:
+      - adoptions
+    put:
+      consumes:
+      - application/json
+      description: Update an adoption
+      parameters:
+      - description: Adoption ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Adoption
+        in: body
+        name: adoption
+        required: true
+        schema:
+          $ref: '#/definitions/models.Adoption'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update an adoption
+      tags:
+      - adoptions
+  /adoptions/my:
+    get:
+      description: Get all adoptions for the currently logged-in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Adoption'
+            type: array
+      summary: Get adoptions for current user
+      tags:
+      - adoptions
+  /adoptions/pet/{pet_id}:
+    get:
+      description: Get all adoptions for a specific pet
+      parameters:
+      - description: Pet ID
+        in: path
+        name: pet_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Adoption'
+            type: array
+      summary: Get adoptions by pet ID
+      tags:
+      - adoptions
+  /adoptions/status:
+    get:
+      description: Get all adoptions filtered by status
+      parameters:
+      - description: Status (pending, approved, rejected)
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Adoption'
+            type: array
+      summary: Get adoptions by status
+      tags:
+      - adoptions
   /appointments:
     get:
       description: Get all appointments
@@ -164,6 +377,44 @@ paths:
       summary: Update an appointment
       tags:
       - appointments
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: User login with email and password
+      parameters:
+      - description: Login details
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success response
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - auth
   /owners:
     get:
       description: Get all owners
@@ -412,6 +663,49 @@ paths:
       summary: Update a pet
       tags:
       - pets
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: User registration with email, username, password, and role
+      parameters:
+      - description: User registration details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User registration
+      tags:
+      - auth
   /services:
     get:
       description: Get all services
@@ -513,9 +807,6 @@ paths:
       summary: Update a service
       tags:
       - services
-schemes:
-- http
-- https
 securityDefinitions:
   BearerAuth:
     in: header

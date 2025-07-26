@@ -13,8 +13,8 @@ func SetupRoutes(app *fiber.App, supabaseClient *storage.Client) {
 	api := app.Group("/api")
 
 	// Auth
-	app.Post("/register", handler.Register)
-	app.Post("/login", handler.Login)
+	api.Post("/register", handler.Register)
+	api.Post("/login", handler.Login)
 
 	// Protected routes untuk Pets
 	pets := api.Group("/pets")

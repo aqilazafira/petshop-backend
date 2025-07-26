@@ -9,6 +9,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// Login godoc
+// @Summary User login
+// @Description User login with email and password
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param login body models.UserLogin true "Login details"
+// @Success 200 {object} map[string]interface{} "Success response"
+// @Failure 400 {object} map[string]interface{} "Invalid request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /login [post]
 func Login(c *fiber.Ctx) error {
 	var req models.UserLogin
 
@@ -43,6 +55,19 @@ func Login(c *fiber.Ctx) error {
 	})
 }
 
+// Register godoc
+// @Summary User registration
+// @Description User registration with email, username, password, and role
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param user body models.UserLogin true "User registration details"
+// @Success 201 {object} map[string]interface{} "User registered successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request body"
+// @Failure 409 {object} map[string]interface{} "Conflict"
+// @Failure 422 {object} map[string]interface{} "Unprocessable Entity"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /register [post]
 func Register(c *fiber.Ctx) error {
 	var req models.UserLogin
 

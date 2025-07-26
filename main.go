@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
+	"github.com/gofiber/swagger"
 )
 
 func init() {
@@ -33,8 +34,7 @@ func init() {
 // @contact.url https://github.com/Fadhail
 // @contact.email 71423044@std.ulbi.ac.id
 
-// @BasePath /
-// @schemes http https
+// @BasePath /api
 
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -56,6 +56,8 @@ func main() {
 		AllowOrigins: strings.Join(config.GetAllowedOrigins(), ","), AllowCredentials: true,
 		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
 	}))
+
+	app.Get("/swagger/*", swagger.HandlerDefault) // serve API docs
 
 	// Setup router
 	routes.SetupRoutes(app, config.SupabaseClient)
