@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -9,6 +11,10 @@ func Middlewares(requiredRole string) fiber.Handler {
 		authToken := c.Get("Authorization")
 		if authToken == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Missing Authorization Header"})
+		}
+		// Remove "Bearer " prefix
+		if strings.HasPrefix(authToken, "Bearer ") {
+			authToken = strings.TrimPrefix(authToken, "Bearer ")
 		}
 		dataDecode, err := Decoder(authToken)
 		if err != nil {

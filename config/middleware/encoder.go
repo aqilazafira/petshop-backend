@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"petshop-backend/models"
+	"strings"
 	"time"
 
 	"aidanwoods.dev/go-paseto"
@@ -25,6 +26,11 @@ func EncodeWithRoleHours(role, email string, hours int64) (string, error) {
 
 func Decoder(tokenstr string) (payload models.Payload, err error) {
 	publickey := os.Getenv("PUBLICKEY")
+
+	// Remove "Bearer " prefix if present
+	if strings.HasPrefix(tokenstr, "Bearer ") {
+		tokenstr = strings.TrimPrefix(tokenstr, "Bearer ")
+	}
 
 	pubKey, err := paseto.NewV4AsymmetricPublicKeyFromHex(publickey)
 	if err != nil {

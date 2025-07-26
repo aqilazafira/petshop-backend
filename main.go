@@ -46,6 +46,9 @@ func main() {
 	// Connect to database
 	config.ConnectDB()
 
+	// Initialize Supabase client
+	config.InitSupabase()
+
 	app := fiber.New()
 
 	// Logging request
@@ -53,13 +56,12 @@ func main() {
 
 	// Basic CORS
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     strings.Join(config.GetAllowedOrigins(), ","),
-		AllowCredentials: true,
+		AllowOrigins:     strings.Join(config.GetAllowedOrigins(), ","),		AllowCredentials: true,
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 	}))
 
 	// Setup router
-	routes.SetupRoutes(app)
+	routes.SetupRoutes(app, config.SupabaseClient)
 
 	// 404 handler
 	app.Use(func(c *fiber.Ctx) error {

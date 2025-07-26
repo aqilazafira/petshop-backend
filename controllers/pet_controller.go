@@ -1,14 +1,90 @@
 package controllers
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
 	"petshop-backend/models"
 	"petshop-backend/repository"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	storage "github.com/supabase-community/storage-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+// uploadToSupabaseStorage uploads a file to Supabase Storage using HTTP API
+func uploadToSupabaseStorage(bucketName, fileName string, fileData []byte) (string, error) {
+	// Get environment variables
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	apiKey := os.Getenv("SUPABASE_KEY")
+
+	if supabaseURL == "" || apiKey == "" {
+		return "", fmt.Errorf("SUPABASE_URL dan SUPABASE_KEY environment variables harus diset")
+	}
+
+	uploadURL := fmt.Sprintf("%s/storage/v1/object/%s/%s", supabaseURL, bucketName, fileName)
+
+	// Create a buffer to write our multipart form data to
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+
+	// Create a form file field
+	part, err := writer.CreateFormFile("file", fileName)
+	if err != nil {
+		return "", err
+	}
+
+	// Copy file data to the form file field
+	_, err = io.Copy(part, bytes.NewReader(fileData))
+	if err != nil {
+		return "", err
+	}
+
+	// Close the writer to finalize the form data
+	err = writer.Close()
+	if err != nil {
+		return "", err
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequest("POST", uploadURL, &body)
+	if err != nil {
+		return "", err
+	}
+
+	// Set headers
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("apikey", apiKey)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Send the request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("upload failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	// Return the public URL
+	publicURL := fmt.Sprintf("%s/storage/v1/object/public/%s/%s", supabaseURL, bucketName, fileName)
+	return publicURL, nil
+}
 
 // GetPets godoc
 // @Summary Get all pets
@@ -60,7 +136,7 @@ func GetPet(c *fiber.Ctx) error {
 // @Param image formData file false "Pet Image"
 // @Success 201 {object} models.Pet
 // @Router /pets [post]
-func CreatePet(c *fiber.Ctx) error {
+func CreatePet(c *fiber.Ctx, supabaseClient *storage.Client) error {
 	age, err := strconv.Atoi(c.FormValue("age"))
 	if err != nil {
 		return c.Status(400).SendString("Umur tidak valid")
@@ -82,11 +158,35 @@ func CreatePet(c *fiber.Ctx) error {
 
 	file, err := c.FormFile("image")
 	if err == nil {
-		filePath := "../Petshop-App/public/pets/" + file.Filename
-		if err := c.SaveFile(file, filePath); err != nil {
-			return c.Status(500).SendString("Gagal menyimpan file")
+		// Read the file content
+		fileContent, err := file.Open()
+		if err != nil {
+			return c.Status(500).SendString("Gagal membuka file")
 		}
-		pet.ImageURL = "/pets/" + file.Filename
+		defer fileContent.Close()
+
+		fileBytes, err := io.ReadAll(fileContent)
+		if err != nil {
+			return c.Status(500).SendString("Gagal membaca file")
+		}
+
+		// Generate a unique filename
+		fileName := uuid.New().String() + filepath.Ext(file.Filename)
+
+		// Upload to Supabase Storage using custom HTTP function
+		publicURL, err := uploadToSupabaseStorage(
+			"pets",
+			fileName,
+			fileBytes,
+		)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error":   "Gagal mengunggah gambar ke Supabase",
+				"details": err.Error(),
+			})
+		}
+
+		pet.ImageURL = publicURL
 	}
 
 	if err := repository.CreatePet(pet); err != nil {
@@ -111,7 +211,7 @@ func CreatePet(c *fiber.Ctx) error {
 // @Param image formData file false "Pet Image"
 // @Success 200 {object} map[string]interface{}
 // @Router /pets/{id} [put]
-func UpdatePet(c *fiber.Ctx) error {
+func UpdatePet(c *fiber.Ctx, supabaseClient *storage.Client) error {
 	id := c.Params("id")
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -129,20 +229,43 @@ func UpdatePet(c *fiber.Ctx) error {
 	}
 
 	update := bson.M{
-		"name":     c.FormValue("name"),
-		"species":  c.FormValue("species"),
-		"age":      age,
-		"gender":   c.FormValue("gender"),
-		"owner_id": ownerID,
+		"name":    c.FormValue("name"),
+		"species": c.FormValue("species"),
+		"age":     age,
+		"gender":  c.FormValue("gender"), "owner_id": ownerID,
 	}
 
 	file, err := c.FormFile("image")
 	if err == nil {
-		filePath := "../Petshop-App/public/pets/" + file.Filename
-		if err := c.SaveFile(file, filePath); err != nil {
-			return c.Status(500).SendString("Gagal menyimpan file")
+		// Read the file content
+		fileContent, err := file.Open()
+		if err != nil {
+			return c.Status(500).SendString("Gagal membuka file")
 		}
-		update["image_url"] = "/pets/" + file.Filename
+		defer fileContent.Close()
+
+		fileBytes, err := io.ReadAll(fileContent)
+		if err != nil {
+			return c.Status(500).SendString("Gagal membaca file")
+		}
+
+		// Generate a unique filename
+		fileName := uuid.New().String() + filepath.Ext(file.Filename)
+
+		// Upload to Supabase Storage using custom HTTP function
+		publicURL, err := uploadToSupabaseStorage(
+			"pets",
+			fileName,
+			fileBytes,
+		)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error":   "Gagal mengunggah gambar ke Supabase",
+				"details": err.Error(),
+			})
+		}
+
+		update["image_url"] = publicURL
 	}
 
 	if err := repository.UpdatePet(objID, bson.M{"$set": update}); err != nil {
