@@ -4,6 +4,7 @@ import (
 	"petshop-backend/config/middleware"
 	"petshop-backend/models"
 	pwd "petshop-backend/pkg/password"
+	"petshop-backend/pkg/validator"
 	"petshop-backend/repository"
 
 	"github.com/gofiber/fiber/v2"
@@ -80,6 +81,11 @@ func Register(c *fiber.Ctx) error {
 
 	if req.Email == "" || req.Username == "" || req.Password == "" || req.Role == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email, username, password, and role are required"})
+	}
+
+	// Validate email format
+	if isValid, errorMsg := validator.ValidateEmailFormat(req.Email); !isValid {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errorMsg})
 	}
 
 	hashed, err := pwd.HashPassword(req.Password)

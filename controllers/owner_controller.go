@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"petshop-backend/models"
+	"petshop-backend/pkg/validator"
 	"petshop-backend/repository"
 
 	"github.com/gofiber/fiber/v2"
@@ -59,6 +60,15 @@ func CreateOwner(c *fiber.Ctx) error {
 	if err := c.BodyParser(&owner); err != nil {
 		return c.Status(400).SendString(err.Error())
 	}
+
+	// Validate email format
+	if isValid, errorMsg := validator.ValidateEmailFormat(owner.Email); !isValid {
+		return c.Status(400).JSON(fiber.Map{
+			"error":   "Invalid email format",
+			"message": errorMsg,
+		})
+	}
+
 	owner.ID = primitive.NewObjectID()
 	err := repository.CreateOwner(owner)
 	if err != nil {
@@ -89,10 +99,19 @@ func UpdateOwner(c *fiber.Ctx) error {
 		return c.Status(400).SendString(err.Error())
 	}
 
+	// Validate email format
+	if isValid, errorMsg := validator.ValidateEmailFormat(owner.Email); !isValid {
+		return c.Status(400).JSON(fiber.Map{
+			"error":   "Invalid email format",
+			"message": errorMsg,
+		})
+	}
+
 	update := bson.M{"$set": bson.M{
-		"name":  owner.Name,
-		"email": owner.Email,
-		"phone": owner.Phone,
+		"name":    owner.Name,
+		"email":   owner.Email,
+		"phone":   owner.Phone,
+		"address": owner.Address,
 	}}
 
 	err = repository.UpdateOwner(objID, update)

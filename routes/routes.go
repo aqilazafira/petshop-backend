@@ -10,43 +10,44 @@ import (
 )
 
 func SetupRoutes(app *fiber.App, supabaseClient *storage.Client) {
+	middleware := middleware.Middlewares("admin")
 	api := app.Group("/api")
 
 	// Auth
-	api.Post("/register", handler.Register)
-	api.Post("/login", handler.Login)
+	app.Post("/register", handler.Register)
+	app.Post("/login", handler.Login)
 
 	// Protected routes untuk Pets
 	pets := api.Group("/pets")
 	pets.Get("/", controllers.GetPets)
 	pets.Get("/:id", controllers.GetPet)
-	pets.Post("/", func(c *fiber.Ctx) error { return controllers.CreatePet(c, supabaseClient) })
-	pets.Put("/:id", func(c *fiber.Ctx) error { return controllers.UpdatePet(c, supabaseClient) })
-	pets.Delete("/:id", middleware.Middlewares("admin"), controllers.DeletePet)
+	pets.Post("/", middleware, func(c *fiber.Ctx) error { return controllers.CreatePet(c, supabaseClient) })
+	pets.Put("/:id", middleware, func(c *fiber.Ctx) error { return controllers.UpdatePet(c, supabaseClient) })
+	pets.Delete("/:id", middleware, controllers.DeletePet)
 
 	// Routes untuk Owners
 	owners := api.Group("/owners")
 	owners.Get("/", controllers.GetOwners)
 	owners.Get("/:id", controllers.GetOwner)
-	owners.Post("/", controllers.CreateOwner)
-	owners.Put("/:id", controllers.UpdateOwner)
-	owners.Delete("/:id", controllers.DeleteOwner)
+	owners.Post("/", middleware, controllers.CreateOwner)
+	owners.Put("/:id", middleware, controllers.UpdateOwner)
+	owners.Delete("/:id", middleware, controllers.DeleteOwner)
 
 	// Routes untuk Appointments
 	appointments := api.Group("/appointments")
 	appointments.Get("/", controllers.GetAppointments)
 	appointments.Get("/:id", controllers.GetAppointmentWithDetails)
-	appointments.Post("/", controllers.CreateAppointment)
-	appointments.Put("/:id", controllers.UpdateAppointment)
-	appointments.Delete("/:id", controllers.DeleteAppointment)
+	appointments.Post("/", middleware, controllers.CreateAppointment)
+	appointments.Put("/:id", middleware, controllers.UpdateAppointment)
+	appointments.Delete("/:id", middleware, controllers.DeleteAppointment)
 
 	// Routes untuk Services
 	services := api.Group("/services")
 	services.Get("/", controllers.GetServices)
 	services.Get("/:id", controllers.GetService)
-	services.Post("/", controllers.CreateService)
-	services.Put("/:id", controllers.UpdateService)
-	services.Delete("/:id", controllers.DeleteService)
+	services.Post("/", middleware, controllers.CreateService)
+	services.Put("/:id", middleware, controllers.UpdateService)
+	services.Delete("/:id", middleware, controllers.DeleteService)
 
 	// Routes untuk Adoptions
 	adoptions := api.Group("/adoptions")
@@ -56,6 +57,6 @@ func SetupRoutes(app *fiber.App, supabaseClient *storage.Client) {
 	adoptions.Get("/pet/:pet_id", controllers.GetAdoptionsByPetID)
 	adoptions.Get("/:id", controllers.GetAdoption)
 	adoptions.Post("/", controllers.CreateAdoption)
-	adoptions.Put("/:id", controllers.UpdateAdoption)
-	adoptions.Delete("/:id", controllers.DeleteAdoption)
+	adoptions.Put("/:id", middleware, controllers.UpdateAdoption)
+	adoptions.Delete("/:id", middleware, controllers.DeleteAdoption)
 }

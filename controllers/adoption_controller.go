@@ -3,6 +3,7 @@ package controllers
 import (
 	"petshop-backend/config/middleware"
 	"petshop-backend/models"
+	"petshop-backend/pkg/validator"
 	"petshop-backend/repository"
 	"strings"
 	"time"
@@ -84,6 +85,14 @@ func CreateAdoption(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{
 			"error":   "Missing required fields",
 			"message": "Name, email, phone, address, reason, and living space are required",
+		})
+	}
+
+	// Validate email format
+	if isValid, errorMsg := validator.ValidateEmailFormat(adoption.Email); !isValid {
+		return c.Status(400).JSON(fiber.Map{
+			"error":   "Invalid email format",
+			"message": errorMsg,
 		})
 	}
 
